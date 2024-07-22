@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBA Activiteiten Agenda</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>OBA Activiteiten Agenda</h1>
+    <table id="agenda">
+        <thead>
+            <tr>
+                <th>Titel</th>
+                <th>Datum</th>
+                <th>Begintijd</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const apiUrl = 'https://zoeken.oba.nl/api/v1/search/?q=table:Activiteiten&refine=true&branch=OBA%20Staatsliedenbuurt&authorization=16c19e6083308c984c452600134989ba';
+        
+        async function fetchData() {
+            const response = await fetch(apiUrl);
+            const text = await response.text();
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, 'application/xml');
+            const results = xml.querySelectorAll('result');
+            
+            const agendaTable = document.querySelector('#agenda tbody');
+            for (let i = 0; i < 10 && i < results.length; i++) {
+                const result = results[i];
+                const title = result.querySelector('title').textContent;
+                const start = new Date(result.querySelector('activity-start').textContent);
+                const date = start.toLocaleDateString('nl-NL');
+                const time = start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${title}</td><td>${date}</td><td>${time}</td>`;
+                agendaTable.appendChild(row);
+            }
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
